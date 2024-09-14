@@ -30,7 +30,10 @@ struct sSymbol { // almacena el valor en formato texto y se clasifica en un tipo
 	sOperator op;
 };
 
-
+int Factorial(int number)
+{
+	return (number == 0 || number == 1) ? 1 : number * Factorial(number - 1);
+}
 
 /**
  * Resuelve una función dentro de una expresión dada.
@@ -44,6 +47,7 @@ double SolveExpression(const std::string sExpression)
 	double res = 0.0;
 	std::deque<sSymbol> superSExpresion; // se inicializa la variable que contendra la expresion que toma mas de un digito
 	std::unordered_map<char, sOperator> mapOps; // un unordered_map contiene key-value y los datos no se ordenan de alguna forma particular
+	mapOps['^'] = { 5,2 };
 	mapOps['/'] = { 4,2 };
 	mapOps['*'] = { 3,2 };
 	mapOps['+'] = { 2,2 };
@@ -95,7 +99,7 @@ double SolveExpression(const std::string sExpression)
 	// DE MOMENTO SE QUEMA UNA EXPRESION PARA PROBAR EL CODIGO
 	{
 
-		superSExpresion.push_back({ "-", sSymbol::Type::Operator, mapOps['-'] });
+		/*superSExpresion.push_back({ "-", sSymbol::Type::Operator, mapOps['-'] });
 		superSExpresion.push_back({ "(", sSymbol::Type::Parenthesis_Open });
 		superSExpresion.push_back({ "(", sSymbol::Type::Parenthesis_Open });
 		superSExpresion.push_back({ "1", sSymbol::Type::Literal_Numeric });
@@ -118,7 +122,20 @@ double SolveExpression(const std::string sExpression)
 		superSExpresion.push_back({ "2", sSymbol::Type::Literal_Numeric });
 		superSExpresion.push_back({ "-", sSymbol::Type::Operator, mapOps['-'] });
 		superSExpresion.push_back({ "3", sSymbol::Type::Literal_Numeric });
-		superSExpresion.push_back({ ")", sSymbol::Type::Parenthesis_Close });
+		superSExpresion.push_back({ ")", sSymbol::Type::Parenthesis_Close });*/
+		
+		//superSExpresion.push_back({ "(", sSymbol::Type::Parenthesis_Open });
+		//superSExpresion.push_back({ "4", sSymbol::Type::Literal_Numeric });
+		//superSExpresion.push_back({ "+", sSymbol::Type::Operator, mapOps['+'] });
+		//superSExpresion.push_back({ "4", sSymbol::Type::Literal_Numeric });
+		//superSExpresion.push_back({ ")", sSymbol::Type::Parenthesis_Close });
+		//superSExpresion.push_back({ "^", sSymbol::Type::Operator, mapOps['^'] });
+		//superSExpresion.push_back({ "(", sSymbol::Type::Parenthesis_Open });
+		//superSExpresion.push_back({ "4", sSymbol::Type::Literal_Numeric });
+		//superSExpresion.push_back({ "-", sSymbol::Type::Operator, mapOps['-'] });
+		//superSExpresion.push_back({ "2", sSymbol::Type::Literal_Numeric });
+		//superSExpresion.push_back({ ")", sSymbol::Type::Parenthesis_Close });
+
 
 		for ( sSymbol sym: superSExpresion )
 		{
@@ -127,7 +144,7 @@ double SolveExpression(const std::string sExpression)
 		std::cout << "\n";
 	}
 
-	/*region TOMOD RESOLVER LA superSExpression */ {
+	/*region RESOLVER LA superSExpression */ {
 
 		//std::string sExpression = "-((1+2)/((6*-7)+(7*-4)/2)-3)";
 
@@ -280,6 +297,7 @@ double SolveExpression(const std::string sExpression)
 				double result = 0.0;
 				if (inst.op.arguments == 2) // si el operador toma 2 argumentos
 				{
+					if (inst.symbol[0] == '^') result = pow(mem[1],mem[0]);
 					if (inst.symbol[0] == '/') result = mem[1] / mem[0];
 					if (inst.symbol[0] == '*') result = mem[1] * mem[0];
 					if (inst.symbol[0] == '+') result = mem[1] + mem[0];
@@ -322,6 +340,7 @@ double SolveExpression(const std::string sExpression)
 double SolveFunction(std::string& sExpression, int& index)
 {
 	std::string currentExpression = "";
+	char functionAbr = sExpression[index];
 	int lastDigitIndex;
 	double res = 0.0;
 
@@ -330,31 +349,79 @@ double SolveFunction(std::string& sExpression, int& index)
 	// la funcion se resolvera y se devolvera el valor
 
 	/*region OBTENER LA FUNCION*/ {
-		bool openParenthesis = false, closeParenthesis = false;
-		for (size_t i = index; i < sExpression.length(); i++)
+		// verificamos que la funcion tenga parentesis
+		index++; // nos pasamos al siguiente caracter despues de la funcion
+		if (!(sExpression[index] == '(')) // primero verificamos que el parentesis de apertura sea el siguiente caracter despues de la funcion
 		{
-			if (sExpression[i] == '(') {
-				openParenthesis = true;
-				continue;
-			}
-
-			if (sExpression[i] == ')') {
-				closeParenthesis = true;
-				lastDigitIndex = i;
-				break;
-			}
-
-			currentExpression += sExpression[i];
+			std::cout << "!!! ERROR! Bad Expression: Parenthesis mismatch\n";
+			return 0;
 		}
 
-		if (!openParenthesis || !closeParenthesis) {
+		int parnthsMissMatched = 0; // contador para saber cuantos parentesis de apertura hay
+		// esta parentesis sera util para saber cuantos parentesis de cierre tenemos que encontrar; Porque si hallamos 
+		// un parentesis abierto mas adelante, tendremos que encontrar su respectivo parentesis de cierre
+
+		for (size_t i = index; i < sExpression.length(); i++) // empezamos desde el parentesis de apertura
+		{
+			if (sExpression[i] == '(') parnthsMissMatched++; // si encontramos un parentesis de apertura, incrementamos el contador
+			if (sExpression[i] == ')') parnthsMissMatched--; // si encontramos un parentesis de cierre, decrementamos el contador
+
+			currentExpression += sExpression[i]; // guardamos el caracter en la variable currentExpression
+
+			if (parnthsMissMatched == 0) // si el contador llega a 0, significa que encontramos el parentesis de cierre
+			{
+				lastDigitIndex = i; // guardamos el indice del parentesis de cierre
+				break;
+			}
+		}
+
+		// casos:
+		// parnthMissMatched = 0; significa que hay la misma cantidad de parentesis de apertura y cierre, por lo tanto es correcto
+		// parnthMissMatched > 0; significa que hay mas parentesis de apertura que de cierre, por lo tanto es incorrecto
+		// parnthMissMatched < 0; significa que hay mas parentesis de cierre que de apertura, por lo tanto es incorrecto
+		if (parnthsMissMatched != 0) // si el contador no llega a 0, significa que hay algun parentesis sin su contraparte
+		{
 			std::cout << "!!! ERROR! Bad Expression: Parenthesis mismatch\n";
 			return 0;
 		}
 	}// endregion
 
 	/*region RESOLVER LA FUNCION*/ {
-		res = SolveExpression(currentExpression);
+		double argumentRes = SolveExpression(currentExpression); // se resuelve el contenido dentro de la funcion
+
+		if (functionAbr == 's') {
+			res = sin(argumentRes);
+		}; // seno
+		if (functionAbr == 'c') {
+			res = cos(argumentRes);
+		}; // coseno
+		if (functionAbr == 't') {
+			res = tan(argumentRes);
+		}; // tangente
+		if (functionAbr == 'z') {
+			res = atan(argumentRes);
+		}; // arcotangente
+		if (functionAbr == 'y') {
+			res = acos(argumentRes);
+		}; // arcocoseno
+		if (functionAbr == 'x') {
+			res = asin(argumentRes);
+		}; // arcoseno
+		if (functionAbr == 'r') {
+			res = sqrt(argumentRes);
+		}; // raiz cuadrada
+		if (functionAbr == 'l') {
+			res = log(argumentRes);
+		}; // logaritmo
+		if (functionAbr == 'e') {
+			res = exp(argumentRes);
+		}; // exponencial
+		if (functionAbr == '!') {
+			if (argumentRes < 0 || static_cast<int>(argumentRes) % 2 != 0) {
+			}
+			res = Factorial(argumentRes);
+		}; // factorial
+
 	}// endregion
 
 	/*region REVINCULAR sExpression*/ {

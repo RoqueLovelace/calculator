@@ -1,3 +1,4 @@
 ﻿  MathFunctions.cpp
-D:\PROGRAMACION\calculadora\MathFunctions\MathFunctions.cpp(343,22): warning C4267: '=': conversión de 'size_t' a 'int'; posible pérdida de datos
+D:\PROGRAMACION\calculadora\MathFunctions\MathFunctions.cpp(373,22): warning C4267: '=': conversión de 'size_t' a 'int'; posible pérdida de datos
+D:\PROGRAMACION\calculadora\MathFunctions\MathFunctions.cpp(422,20): warning C4244: 'argumento': conversión de 'double' a 'int'; posible pérdida de datos
   MathFunctions.vcxproj -> D:\PROGRAMACION\calculadora\x64\Debug\MathFunctions.exe
