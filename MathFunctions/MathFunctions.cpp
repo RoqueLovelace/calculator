@@ -186,6 +186,11 @@ double SolveExpression(std::string& sExpression)
 			// std::cout << "string que queda: " << sExpression << "\n";
 		}
 		else if (c == '(') {
+			if (!superSExpresion.empty() &&
+				(superSExpresion.back().symbol == ")" ||
+					superSExpresion.back().type == sSymbol::Type::Literal_Numeric)) {
+				superSExpresion.push_back({ "*", sSymbol::Type::Operator, mapOps['*'] });
+			}
 			superSExpresion.push_back({ "(", sSymbol::Type::Parenthesis_Open });
 		}
 		else if (c == ')') {
@@ -407,7 +412,15 @@ int main() {
 
 	std::cout << "TESTEOS" << "\n\n";
 
-	std::string expression = "1 + 2 * s(32.5 - c(3.11))"; 
+	std::string expression = "(3)(4)";
+	std::cout << "Original: " << expression;
+	std::cout << " | Result: " << SolveExpression(expression) << std::endl;
+
+	expression = "3(4)";
+	std::cout << "Original: " << expression;
+	std::cout << " | Result: " << SolveExpression(expression) << std::endl;
+
+	expression = "1 + 2 * s(32.5 - c(3.11))"; 
 	std::cout << "Original: " << expression;
 	std::cout <<  " | Result: " << SolveExpression(expression) << std::endl;
 
