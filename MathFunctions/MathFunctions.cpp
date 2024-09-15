@@ -200,6 +200,11 @@ double SolveExpression(std::string& sExpression)
 			superSExpresion.push_back({ std::string(1,c), sSymbol::Type::Operator, mapOps[c] });
 		}
 		else if (functionsSymbol.find(c) != std::string::npos) {
+			if (!superSExpresion.empty() &&
+				(superSExpresion.back().symbol == ")" ||
+					superSExpresion.back().type == sSymbol::Type::Literal_Numeric)) {
+				superSExpresion.push_back({ "*", sSymbol::Type::Operator, mapOps['*'] });
+			}
 			double number = SolveFunction(sExpression, index);
 			superSExpresion.push_back({ std::to_string(number),  sSymbol::Type::Literal_Numeric });
 		}
@@ -417,6 +422,26 @@ int main() {
 	std::cout << " | Result: " << SolveExpression(expression) << std::endl;
 
 	expression = "3(4)";
+	std::cout << "Original: " << expression;
+	std::cout << " | Result: " << SolveExpression(expression) << std::endl;
+
+	expression = "s(4)";
+	std::cout << "Original: " << expression;
+	std::cout << " | Result: " << SolveExpression(expression) << std::endl;
+
+	expression = "3*s(4)";
+	std::cout << "Original: " << expression;
+	std::cout << " | Result: " << SolveExpression(expression) << std::endl;
+
+	expression = "3s(4)";
+	std::cout << "Original: " << expression;
+	std::cout << " | Result: " << SolveExpression(expression) << std::endl;
+
+	expression = "(3+4)s(4)";
+	std::cout << "Original: " << expression;
+	std::cout << " | Result: " << SolveExpression(expression) << std::endl;
+
+	expression = "(3+4)*s(4)";
 	std::cout << "Original: " << expression;
 	std::cout << " | Result: " << SolveExpression(expression) << std::endl;
 
